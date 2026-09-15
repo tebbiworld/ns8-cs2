@@ -1,0 +1,16 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2026 tebbi
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# The restic restore writes the cfg files into the cs2-data volume as the
+# module user (uid 0 inside the user namespace); the server runs as uid 1000
+# ("steam") and must own them.
+
+set -e
+exec 1>&2
+mp=$(podman volume inspect cs2-data --format '{{.Mountpoint}}' 2>/dev/null) || exit 0
+podman unshare chown -R 1000:1000 "${mp}"
+echo "cs2-data ownership fixed for uid 1000"

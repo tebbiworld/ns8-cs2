@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 tebbi
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Re-run configure-module with the restored settings: env files, firewall
+# service on the (possibly different) node, start the server (SteamCMD
+# downloads the game files again; only cfg overrides and hooks were in the
+# backup).
+
+import os
+
+import agent
+import agent.tasks
+
+env = os.environ
+extra = []
+try:
+    with open("cs2-extra.env") as fp:
+        extra = [l.rstrip("\n") for l in fp if l.strip() and not l.startswith("#")]
+except FileNotFoundError:
+    pass
+data = {
+    "server_name": env.get("SERVER_NAME", "CS2 server"),
+    "server_password": env.get("SERVER_PASSWORD", ""),
+    "gslt_token": env.get("GSLT_TOKEN", ""),
+    "max_players": int(env.get("MAX_PLAYERS", "10")),
+    "game_port": int(env.get("GAME_PORT", "27015")),
+    "lan_mode": env.get("LAN_MODE") == "true",
+    "game_mode": env.get("GAME_MODE", "competitive"),
+    "map_group": env.get("MAP_GROUP", "mg_active"),
+    "start_map": env.get("START_MAP", "de_inferno"),
+    "workshop_collection": env.get("WORKSHOP_COLLECTION", ""),
+    "workshop_map": env.get("WORKSHOP_MAP", ""),
+    "bot_difficulty": int(env.get("BOT_DIFFICULTY", "1")),
+    "bot_quota": int(env.get("BOT_QUOTA", "0")),
+    "bot_quota_mode": env.get("BOT_QUOTA_MODE", "fill"),
+    "tv_enabled": env.get("TV_ENABLED") == "true",
+    "tv_port": int(env.get("TV_PORT", "27020")),
+    "tv_password": env.get("TV_PASSWORD", ""),
+    "tv_delay": int(env.get("TV_DELAY", "0")),
+    "tv_autorecord": env.get("TV_AUTORECORD") == "true",
+    "validate_files": env.get("VALIDATE_FILES") == "true",
+    "additional_args": env.get("ADDITIONAL_ARGS", ""),
+    "extra_env": extra,
+}
+response = agent.tasks.run(agent_id=env["AGENT_ID"], action="configure-module", data=data)
+agent.assert_exp(response["exit_code"] == 0, "The configure-module subtask failed!")

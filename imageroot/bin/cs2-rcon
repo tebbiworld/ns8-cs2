@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 tebbi
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Minimal Source RCON client (TCP) for the local game port.
+# Usage: cs2-rcon <port> <password> <command...>   -> prints the response
+
+import socket
+import struct
+import sys
+
+port, password = int(sys.argv[1]), sys.argv[2]
+command = " ".join(sys.argv[3:])
+
+def packet(pid, ptype, body):
+    payload = struct.pack("<ii", pid, ptype) + body.encode() + b"\x00\x00"
+    return struct.pack("<i", len(payload)) + payload
+
+def read_packet(sock):
+    hdr = b""
+    while len(hdr) < 4:
+        chunk = sock.recv(4 - len(hdr))
+        if not chunk:
+            raise ConnectionError("connection closed")
+        hdr += chunk
+    (length,) = struct.unpack("<i", hdr)
+    body = b""
+    while len(body) < length:
+        chunk = sock.recv(length - len(body))
+        if not chunk:
+            raise ConnectionError("connection closed")
+        body += chunk
+    pid, ptype = struct.unpack_from("<ii", body, 0)
+    return pid, ptype, body[8:-2].decode("utf-8", "replace")
+
+sock = socket.create_connection(("127.0.0.1", port), timeout=10)
+sock.sendall(packet(1, 3, password))          # SERVERDATA_AUTH
+while True:
+    pid, ptype, _ = read_packet(sock)
+    if ptype == 2:                             # SERVERDATA_AUTH_RESPONSE
+        break
+if pid == -1:
+    print("RCON authentication failed", file=sys.stderr)
+    sys.exit(1)
+sock.sendall(packet(2, 2, command))           # SERVERDATA_EXECCOMMAND
+sock.sendall(packet(3, 0, ""))                # empty RESPONSE_VALUE as end marker
+out = []
+while True:
+    pid, ptype, text = read_packet(sock)
+    if pid == 3:
+        break
+    out.append(text)
+sock.close()
+print("".join(out).rstrip())

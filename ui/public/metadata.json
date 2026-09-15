@@ -1,0 +1,22 @@
+{
+  "name": "Counter-Strike 2 Server",
+  "description": {
+    "en": "Counter-Strike 2 dedicated server (joedwards32/cs2, SteamCMD) — game modes, bots, workshop maps, CSTV, RCON console; players join with the free CS2 client via steam://connect",
+    "de": "Counter-Strike-2-Dedicated-Server (joedwards32/cs2, SteamCMD) — Spielmodi, Bots, Workshop-Maps, CSTV, RCON-Konsole; Spieler verbinden sich mit dem kostenlosen CS2-Client per steam://connect"
+  },
+  "categories": [
+    "multimedia"
+  ],
+  "authors": [
+    {
+      "name": "tebbi",
+      "email": "info@ebbinghaus.world"
+    }
+  ],
+  "docs": {
+    "documentation_url": "https://github.com/joedwards32/CS2#readme",
+    "bug_url": "https://github.com/tebbiworld/ns8-cs2/issues",
+    "code_url": "https://github.com/tebbiworld/ns8-cs2"
+  },
+  "source": "ghcr.io/tebbiworld/cs2"
+}

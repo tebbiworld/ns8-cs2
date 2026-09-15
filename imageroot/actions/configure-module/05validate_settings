@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 tebbi
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Checks beyond the JSON schema: port clashes on the node, distinct game/CSTV
+# ports, reserved variable names in the additional variables.
+
+import json
+import os
+import subprocess
+import sys
+
+import agent
+
+agent.set_weight(os.path.basename(__file__), 0)
+
+data = json.load(sys.stdin)
+errors = []
+
+def fail(field, value, error):
+    errors.append({"field": field, "parameter": field, "value": value, "error": error})
+
+def port_in_use(port, proto):
+    flag = "-tlnH" if proto == "tcp" else "-ulnH"
+    out = subprocess.run(["ss", flag, f"sport = :{port}"], capture_output=True, text=True).stdout
+    return bool(out.strip())
+
+game_port = int(data["game_port"])
+tv = bool(data.get("tv_enabled", False))
+tv_port = int(data.get("tv_port") or 27020)
+cur_game = int(os.environ.get("GAME_PORT", 0))
+cur_tv = int(os.environ.get("TV_PORT", 0)) if os.environ.get("TV_ENABLED") == "true" else 0
+# Only probe ports that change: the running instance owns its current ones.
+if game_port != cur_game and (port_in_use(game_port, "tcp") or port_in_use(game_port, "udp")):
+    fail("game_port", game_port, "port_in_use")
+if tv:
+    if tv_port == game_port:
+        fail("tv_port", tv_port, "port_same_as_game_port")
+    elif tv_port not in (cur_tv, cur_game) and port_in_use(tv_port, "udp"):
+        fail("tv_port", tv_port, "port_in_use")
+
+for field in ("server_name", "server_password", "tv_password"):
+    if "\n" in (data.get(field) or "") or '"' in (data.get(field) or ""):
+        fail(field, data.get(field), "invalid_characters")
+
+RESERVED = {"SRCDS_TOKEN", "CS2_SERVERNAME", "CS2_PW", "CS2_RCONPW", "CS2_RCON_PORT", "CS2_MAXPLAYERS", "CS2_PORT", "CS2_IP",
+            "CS2_LAN", "CS2_GAMEALIAS", "CS2_GAMETYPE", "CS2_GAMEMODE", "CS2_MAPGROUP", "CS2_STARTMAP",
+            "CS2_HOST_WORKSHOP_COLLECTION", "CS2_HOST_WORKSHOP_MAP", "CS2_BOT_DIFFICULTY", "CS2_BOT_QUOTA", "CS2_BOT_QUOTA_MODE",
+            "TV_ENABLE", "TV_PORT", "TV_PW", "TV_DELAY", "TV_AUTORECORD", "STEAMAPPVALIDATE", "CS2_ADDITIONAL_ARGS",
+            "STEAMAPPID", "STEAMAPP", "STEAMAPPDIR", "STEAMCMDDIR"}
+seen = set()
+for entry in data.get("extra_env") or []:
+    key = entry.split("=", 1)[0]
+    if key in RESERVED:
+        fail("extra_env", entry, "reserved_variable")
+    elif key in seen:
+        fail("extra_env", entry, "duplicate_variable")
+    seen.add(key)
+
+if errors:
+    agent.set_status("validation-failed")
+    json.dump(errors, fp=sys.stdout)
+    sys.exit(2)

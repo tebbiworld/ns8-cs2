@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 tebbi
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Source engine A2S_INFO query against the local game port: prints a JSON
+# object with name, map, players, max_players, version (or an "error" key).
+# Usage: cs2-query [port]
+
+import json
+import socket
+import struct
+import sys
+
+port = int(sys.argv[1]) if len(sys.argv) > 1 else 27015
+REQ = b"\xff\xff\xff\xffTSource Engine Query\x00"
+
+def read_cstring(buf, pos):
+    end = buf.index(b"\x00", pos)
+    return buf[pos:end].decode("utf-8", "replace"), end + 1
+
+try:
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.settimeout(3)
+    s.sendto(REQ, ("127.0.0.1", port))
+    data = s.recv(4096)
+    if data[4:5] == b"A":  # challenge (S2C_CHALLENGE), resend with it
+        s.sendto(REQ + data[5:9], ("127.0.0.1", port))
+        data = s.recv(4096)
+    if data[4:5] != b"I":
+        raise ValueError("unexpected reply")
+    pos = 6  # header 0xFFFFFFFF, 'I', protocol
+    name, pos = read_cstring(data, pos)
+    map_name, pos = read_cstring(data, pos)
+    folder, pos = read_cstring(data, pos)
+    game, pos = read_cstring(data, pos)
+    pos += 2  # app id
+    players, max_players, bots = struct.unpack_from("<BBB", data, pos)
+    pos += 3
+    pos += 3  # server type, environment, visibility
+    pos += 1  # vac
+    version, pos = read_cstring(data, pos)
+    json.dump({"name": name, "map": map_name, "players": players, "max_players": max_players, "bots": bots,
+               "version": version, "game": game}, fp=sys.stdout)
+except Exception as ex:
+    json.dump({"error": str(ex)}, fp=sys.stdout)

@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 tebbi
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Carry the settings and secrets of the backed-up instance over to the new one.
+
+import json
+import sys
+
+import agent
+
+request = json.load(sys.stdin)
+env = request["environment"]
+keep = ["RCON_PASSWORD", "SERVER_NAME", "SERVER_PASSWORD", "GSLT_TOKEN", "MAX_PLAYERS", "GAME_PORT", "LAN_MODE", "GAME_MODE",
+        "MAP_GROUP", "START_MAP", "WORKSHOP_COLLECTION", "WORKSHOP_MAP", "BOT_DIFFICULTY", "BOT_QUOTA", "BOT_QUOTA_MODE",
+        "TV_ENABLED", "TV_PORT", "TV_PASSWORD", "TV_DELAY", "TV_AUTORECORD", "VALIDATE_FILES", "ADDITIONAL_ARGS"]
+agent.mset_env({k: env[k] for k in keep if k in env})

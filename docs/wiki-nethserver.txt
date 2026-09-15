@@ -1,0 +1,89 @@
+======Counter-Strike 2 Server======
+A [[https://www.counter-strike.net/|Counter-Strike 2]] dedicated server for your own community, built on the [[https://github.com/joedwards32/CS2|joedwards32/cs2]] image (Steam Runtime + SteamCMD): game modes, maps and Steam Workshop, bots, CSTV, RCON console from the settings page. Players use the free CS2 client from Steam.
+
+====Announcement and talks====
+The Counter-Strike 2 Server app announcement TBA
+
+Counter-Strike 2 Server is a community application from the [[ns8:tebbiworld_repository|tebbiworld]] repository. Documentation and source can be found on [[https://github.com/tebbiworld/ns8-cs2|Github]]
+
+=====What it does=====
+  * one rootless container with the pinned ''joedwards32/cs2'' image; SteamCMD installs the CS2 server files into the ''cs2-data'' volume at the first start (~35 GB) and updates them at every start
+  * game mode (Casual, Competitive, Wingman, Arms Race, Demolition, Deathmatch, Custom), map group and start map, Steam Workshop map or collection, bots, server password, CSTV with demo recording
+  * game port (TCP+UDP) and CSTV port chosen in the settings, published on the node and opened on the node firewall
+  * live status (map, players, version) and a ''steam://connect'' link on the settings page; **RCON console** on the page and as the ''run-command'' action
+  * settings and cfg overrides in the NS8 backup; restore re-downloads the game files
+
+=====Architecture=====
+
+^ Container ^ Image ^ Purpose ^
+| ''cs2'' | ''docker.io/joedwards32/cs2:<version>'' (pinned) | SteamCMD + CS2 dedicated server as uid 1000; 27015 tcp+udp (game + RCON) and 27020/udp (CSTV) published on the configured ports |
+
+^ Volume ^ Purpose ^ Backup ^
+| ''cs2-data'' | game files (~35 GB), cfg, hooks | only ''game/csgo/cfg'' and ''pre.sh''/''post.sh'' |
+
+=====Requirements=====
+  * ~35 GB free disk for the volume (the image documentation recommends 60 GB), 2 CPUs, ~2 GB RAM, internet access to Steam at every start
+  * players need a Steam account and the free CS2 client
+  * for players outside the LAN a **Game Server Login Token** (GSLT) for app ID 730 from [[https://steamcommunity.com/dev/managegameservers]]; without it the server accepts LAN clients only
+
+=====Installation=====
+On the NethServer 8 cluster leader:
+
+<code bash>
+add-module ghcr.io/tebbiworld/cs2:latest 1
+</code>
+
+or from the Software Center after adding the [[ns8:tebbiworld_repository|tebbiworld repository]].
+
+=====Configuration=====
+Open the instance settings:
+
+  * **Server** — name, optional password, GSLT token (stored, never shown again; tick //remove// to delete it), maximum players, game port, LAN mode (''sv_lan 1'', no Steam authentication)
+  * **Game** — game mode, map group (''mg_active'', ''mg_reserves'', …), start map, Steam Workshop collection or map ID (maps of a collection are chosen in the console with ''ds_workshop_changelevel'')
+  * **Bots** — number, difficulty, quota mode
+  * **CSTV** — spectator/demo server on its own UDP port, password, delay, automatic demo recording
+  * **Advanced** — validate game files at start (repair), additional cs2 command line arguments, additional container variables (''KEY=VALUE'', e.g. ''CS2_CFG_URL'' for a customisation bundle; see the [[https://github.com/joedwards32/CS2#readme|image README]])
+
+The first start downloads the game files — allow 10–30 minutes. The status line on the settings page distinguishes //container running (SteamCMD installing)// from //server online//.
+
+Game mode defaults are in ''game/csgo/cfg/gamemode_*.cfg'' inside the volume; put overrides into ''gamemode_<mode>_server.cfg'' (kept in the backup).
+
+====Console====
+Commands go to the server through RCON on the game port: ''status'', ''changelevel de_dust2'', ''bot_add'', ''bot_kick'', ''mp_restartgame 1'', ''say Hello'', ''ds_workshop_listmaps''. From the leader node:
+
+<code bash>
+api-cli run module/cs21/run-command --data '{"command":"status"}'
+</code>
+
+=====Connecting=====
+Install CS2 from Steam, then open ''%%steam://connect/<node IP or name>:<port>%%'' (link on the settings page) or type ''connect <address>'' in the game console. For players outside the LAN forward the game port (TCP+UDP) and, if enabled, the CSTV port on the router to the node and enter a GSLT token.
+
+=====Backup and restore=====
+The backup contains the module settings (token, RCON password), the cfg directory and the hooks — not the game files. A restore recreates the instance, restores the cfg files into a fresh volume, re-applies settings and firewall service and starts the server, which downloads the game files again.
+
+=====Updates=====
+The module pins the ''joedwards32/cs2'' image; a weekly GitHub Action releases a new module version when a newer image release is at least six weeks old. The game files are updated by SteamCMD at every container start — restart the instance after a CS2 update.
+
+=====Licences and trademarks=====
+Unofficial, community-built package, not affiliated with or endorsed by Valve or the image author. "Counter-Strike" is a trademark of Valve Corporation and is used here only to identify the packaged software; the module logo is the official Counter-Strike 2 logo from Steam, used unmodified. The server files are downloaded from Steam at runtime under Valve's terms; nothing of them is redistributed.
+
+The ''joedwards32/cs2'' image is MIT; the module's own code is %%GPL%%-3.0-or-later.
+
+=====Links=====
+
+  * [[https://github.com/joedwards32/CS2|joedwards32/cs2 image]]
+  * [[https://developer.valvesoftware.com/wiki/Counter-Strike_2/Dedicated_Servers|Valve: CS2 dedicated servers]]
+  * [[https://steamcommunity.com/dev/managegameservers|Game Server Login Tokens]]
+  * [[https://github.com/tebbiworld/ns8-cs2|Module on Github]]
+  * [[https://github.com/tebbiworld/ns8-cs2/issues|Bug reports]]
+
+=====Disclaimer=====
+Private hobby project, shared as-is. No warranty, no guaranteed support, use at your own risk.
+
+----
+{{tag>application}}
+{{tag>category:MultiMedia}}
+{{tag>status:Alpha}}
+{{tag>certlevel:1}}
+{{tag>repo:tebbiworld}}
+{{tag>description:"Counter-Strike 2 dedicated server with game modes, bots, workshop maps, CSTV and RCON console"}}

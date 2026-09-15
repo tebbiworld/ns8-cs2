@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 tebbi
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Run a server console command through RCON on the local game port and
+# return its output (e.g. "status", "changelevel de_dust2", "bot_add").
+
+import json
+import os
+import subprocess
+import sys
+
+import agent
+
+data = json.load(sys.stdin)
+command = data["command"].strip()
+try:
+    proc = subprocess.run([os.path.expanduser("~/.config/bin/cs2-rcon"), os.environ.get("GAME_PORT", "27015"),
+                           os.environ["RCON_PASSWORD"], command], capture_output=True, text=True, timeout=30)
+except subprocess.TimeoutExpired:
+    print(agent.SD_ERR + "RCON timed out (server not running or still starting?)", file=sys.stderr)
+    sys.exit(1)
+if proc.returncode != 0:
+    print(agent.SD_ERR + (proc.stderr.strip() or "RCON failed (server not running?)"), file=sys.stderr)
+    sys.exit(1)
+json.dump({"output": proc.stdout.rstrip()}, fp=sys.stdout)

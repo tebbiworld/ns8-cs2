@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 tebbi
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Seed the environment for a fresh instance. The RCON password is generated
+# once (the run-command action uses it). Everything else is applied by
+# configure-module.
+
+import secrets
+
+import agent
+
+agent.mset_env({
+    "RCON_PASSWORD": secrets.token_hex(16),
+    "SERVER_NAME": "NethServer 8 CS2 server",
+    "SERVER_PASSWORD": "",
+    "GSLT_TOKEN": "",
+    "MAX_PLAYERS": "10",
+    "GAME_PORT": "27015",
+    "LAN_MODE": "false",
+    "GAME_MODE": "competitive",
+    "MAP_GROUP": "mg_active",
+    "START_MAP": "de_inferno",
+    "WORKSHOP_COLLECTION": "",
+    "WORKSHOP_MAP": "",
+    "BOT_DIFFICULTY": "1",
+    "BOT_QUOTA": "0",
+    "BOT_QUOTA_MODE": "fill",
+    "TV_ENABLED": "false",
+    "TV_PORT": "27020",
+    "TV_PASSWORD": "",
+    "TV_DELAY": "0",
+    "TV_AUTORECORD": "false",
+    "VALIDATE_FILES": "false",
+    "ADDITIONAL_ARGS": "",
+    "CS2_PUBLISH_ARGS": "--publish 27015:27015/tcp --publish 27015:27015/udp",
+})

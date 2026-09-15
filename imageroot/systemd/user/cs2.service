@@ -1,0 +1,52 @@
+#
+# Copyright (C) 2026 tebbi
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Counter-Strike 2 dedicated server: one rootless container running
+# docker.io/joedwards32/cs2 (pinned by the module through
+# org.nethserver.images -> ${CS2_IMAGE}). The container runs as uid 1000
+# ("steam"); at every start SteamCMD installs or updates the server files in
+# the cs2-data volume (first start: ~35 GB download).
+#
+# Ports (CS2_PUBLISH_ARGS, set by configure-module): the game port (tcp+udp,
+# default 27015; RCON shares the TCP side) and, with CSTV enabled, the CSTV
+# port (udp, default 27020), published on all node addresses and opened on
+# the node firewall.
+#
+# Settings: state/cs2.env (generated) + state/cs2-extra.env (additional
+# variables from the settings page, applied last).
+
+[Unit]
+Description=Counter-Strike 2 server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+EnvironmentFile=%S/state/environment
+WorkingDirectory=%S/state
+Restart=always
+TimeoutStartSec=300
+TimeoutStopSec=90
+ExecStartPre=/bin/touch %S/state/cs2.env %S/state/cs2-extra.env
+ExecStartPre=/bin/rm -f %t/cs2.pid %t/cs2.ctr-id
+ExecStart=/usr/bin/podman run \
+    --conmon-pidfile %t/cs2.pid \
+    --cidfile %t/cs2.ctr-id \
+    --cgroups=no-conmon \
+    --replace -d --name cs2 \
+    --stop-timeout 60 \
+    $CS2_PUBLISH_ARGS \
+    --volume cs2-data:/home/steam/cs2-dedicated \
+    --env-file %S/state/cs2.env \
+    --env-file %S/state/cs2-extra.env \
+    ${CS2_IMAGE}
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/cs2.ctr-id -t 60
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/cs2.ctr-id
+PIDFile=%t/cs2.pid
+Type=forking
+SyslogIdentifier=%u
+
+[Install]
+WantedBy=default.target
