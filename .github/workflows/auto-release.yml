@@ -27,7 +27,7 @@ permissions:
 env:
   UPSTREAM_IMAGES: "docker.io/joedwards32/cs2"
   TAG_REGEX: '^(?P<ver>\d+\.\d+\.\d+)$'
-  UPSTREAM_NAME: "Plex Media Server"
+  UPSTREAM_NAME: "joedwards32/cs2"
   PIN_FILES: "build-images.sh"
   MIN_DAYS: "42"
   MODULE: "cs2"
