@@ -7,7 +7,7 @@
 # docker.io/joedwards32/cs2 (pinned by the module through
 # org.nethserver.images -> ${CS2_IMAGE}). The container runs as uid 1000
 # ("steam"); at every start SteamCMD installs or updates the server files in
-# the cs2-data volume (first start: ~35 GB download).
+# the cs2-data volume (first start: 71 GB download, ~67 GB installed).
 #
 # Ports (CS2_PUBLISH_ARGS, set by configure-module): the game port (tcp+udp,
 # default 27015; RCON shares the TCP side) and, with CSTV enabled, the CSTV

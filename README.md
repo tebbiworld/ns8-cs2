@@ -7,7 +7,8 @@ SteamCMD).
 
 - Game modes Casual, Competitive, Wingman, Arms Race, Demolition, Deathmatch,
   Custom; map group and start map; Steam Workshop maps and collections
-- Bots (number, difficulty, quota mode), server password, CSTV with demo
+- Bots (number, difficulty, quota mode — bots join once the first player is
+  connected, `bot_join_after_player`), server password, CSTV with demo
   recording
 - Ports chosen in the settings (game port TCP+UDP, CSTV UDP), published on the
   node and opened on the node firewall
@@ -19,9 +20,10 @@ SteamCMD).
 
 ## Requirements
 
-- **~35 GB disk** in the module's volume for the game files (SteamCMD
-  downloads them at the first start and updates them at every start; the
-  image documentation recommends 60 GB free)
+- **~70 GB free disk** on the node for the module's volume: SteamCMD
+  preallocates 58.4 GB before the first download and refuses to install
+  with less ("Not enough disk space", app state 0x202); the installed game
+  files take **~67 GB** (71 GB download), updates need headroom on top
 - 2 CPUs, ~2 GB RAM for the server itself
 - Internet access to Steam at every start
 - Players use the **free CS2 client from Steam** (Steam account required).
@@ -81,7 +83,7 @@ node, and enter a GSLT token.
 
 The NS8 backup contains the module settings (incl. token and RCON password),
 the server cfg directory (`game/csgo/cfg`: game mode overrides, custom
-configs) and the `pre.sh`/`post.sh` hooks — **not** the ~35 GB of game files.
+configs) and the `pre.sh`/`post.sh` hooks — **not** the ~67 GB of game files.
 A restore recreates the instance, restores the cfg files into a fresh
 volume, re-applies settings and firewall service and starts the server,
 which downloads the game files again.

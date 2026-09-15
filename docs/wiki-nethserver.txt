@@ -7,7 +7,7 @@ The Counter-Strike 2 Server app announcement TBA
 Counter-Strike 2 Server is a community application from the [[ns8:tebbiworld_repository|tebbiworld]] repository. Documentation and source can be found on [[https://github.com/tebbiworld/ns8-cs2|Github]]
 
 =====What it does=====
-  * one rootless container with the pinned ''joedwards32/cs2'' image; SteamCMD installs the CS2 server files into the ''cs2-data'' volume at the first start (~35 GB) and updates them at every start
+  * one rootless container with the pinned ''joedwards32/cs2'' image; SteamCMD installs the CS2 server files into the ''cs2-data'' volume at the first start (~67 GB) and updates them at every start
   * game mode (Casual, Competitive, Wingman, Arms Race, Demolition, Deathmatch, Custom), map group and start map, Steam Workshop map or collection, bots, server password, CSTV with demo recording
   * game port (TCP+UDP) and CSTV port chosen in the settings, published on the node and opened on the node firewall
   * live status (map, players, version) and a ''steam://connect'' link on the settings page; **RCON console** on the page and as the ''run-command'' action
@@ -19,10 +19,10 @@ Counter-Strike 2 Server is a community application from the [[ns8:tebbiworld_rep
 | ''cs2'' | ''docker.io/joedwards32/cs2:<version>'' (pinned) | SteamCMD + CS2 dedicated server as uid 1000; 27015 tcp+udp (game + RCON) and 27020/udp (CSTV) published on the configured ports |
 
 ^ Volume ^ Purpose ^ Backup ^
-| ''cs2-data'' | game files (~35 GB), cfg, hooks | only ''game/csgo/cfg'' and ''pre.sh''/''post.sh'' |
+| ''cs2-data'' | game files (~67 GB), cfg, hooks | only ''game/csgo/cfg'' and ''pre.sh''/''post.sh'' |
 
 =====Requirements=====
-  * ~35 GB free disk for the volume (the image documentation recommends 60 GB), 2 CPUs, ~2 GB RAM, internet access to Steam at every start
+  * **~70 GB free disk** for the volume: SteamCMD preallocates 58.4 GB before the first download and refuses with less (''Not enough disk space'', state 0x202); the installed game files take ~67 GB (71 GB download). 2 CPUs, ~2 GB RAM, internet access to Steam at every start
   * players need a Steam account and the free CS2 client
   * for players outside the LAN a **Game Server Login Token** (GSLT) for app ID 730 from [[https://steamcommunity.com/dev/managegameservers]]; without it the server accepts LAN clients only
 
@@ -40,7 +40,7 @@ Open the instance settings:
 
   * **Server** — name, optional password, GSLT token (stored, never shown again; tick //remove// to delete it), maximum players, game port, LAN mode (''sv_lan 1'', no Steam authentication)
   * **Game** — game mode, map group (''mg_active'', ''mg_reserves'', …), start map, Steam Workshop collection or map ID (maps of a collection are chosen in the console with ''ds_workshop_changelevel'')
-  * **Bots** — number, difficulty, quota mode
+  * **Bots** — number, difficulty, quota mode (bots join once the first player is connected)
   * **CSTV** — spectator/demo server on its own UDP port, password, delay, automatic demo recording
   * **Advanced** — validate game files at start (repair), additional cs2 command line arguments, additional container variables (''KEY=VALUE'', e.g. ''CS2_CFG_URL'' for a customisation bundle; see the [[https://github.com/joedwards32/CS2#readme|image README]])
 
