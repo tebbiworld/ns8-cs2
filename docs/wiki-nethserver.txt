@@ -10,7 +10,7 @@ Counter-Strike 2 Server is a community application from the [[ns8:tebbiworld_rep
   * one rootless container with the pinned ''joedwards32/cs2'' image; SteamCMD installs the CS2 server files into the ''cs2-data'' volume at the first start (~67 GB) and updates them at every start
   * game mode (Casual, Competitive, Wingman, Arms Race, Demolition, Deathmatch, Custom), map group and start map, Steam Workshop map or collection, bots, server password, CSTV with demo recording
   * game port (TCP+UDP) and CSTV port chosen in the settings, published on the node and opened on the node firewall
-  * live status (map, players, version) and a ''steam://connect'' link on the settings page; **RCON console** on the page and as the ''run-command'' action
+  * live status (map, players, version) and a ''%%steam://connect%%'' link on the settings page; **RCON console** on the page and as the ''run-command'' action
   * settings and cfg overrides in the NS8 backup; restore re-downloads the game files
 
 =====Architecture=====
