@@ -16,7 +16,7 @@ Counter-Strike 2 Server is a community application from the [[ns8:tebbiworld_rep
 =====Architecture=====
 
 ^ Container ^ Image ^ Purpose ^
-| ''cs2'' | ''docker.io/joedwards32/cs2:<version>'' (pinned) | SteamCMD + CS2 dedicated server as uid 1000; 27015 tcp+udp (game + RCON) and 27020/udp (CSTV) published on the configured ports |
+| ''cs2'' | ''%%docker.io/joedwards32/cs2:<version>%%'' (pinned) | SteamCMD + CS2 dedicated server as uid 1000; 27015 tcp+udp (game + RCON) and 27020/udp (CSTV) published on the configured ports |
 
 ^ Volume ^ Purpose ^ Backup ^
 | ''cs2-data'' | game files (~67 GB), cfg, hooks | only ''game/csgo/cfg'' and ''pre.sh''/''post.sh'' |
@@ -46,7 +46,7 @@ Open the instance settings:
 
 The first start downloads the game files — allow 10–30 minutes. The status line on the settings page distinguishes //container running (SteamCMD installing)// from //server online//.
 
-Game mode defaults are in ''game/csgo/cfg/gamemode_*.cfg'' inside the volume; put overrides into ''gamemode_<mode>_server.cfg'' (kept in the backup).
+Game mode defaults are in ''game/csgo/cfg/gamemode_*.cfg'' inside the volume; put overrides into ''%%gamemode_<mode>_server.cfg%%'' (kept in the backup).
 
 ====Console====
 Commands go to the server through RCON on the game port: ''status'', ''changelevel de_dust2'', ''bot_add'', ''bot_kick'', ''mp_restartgame 1'', ''say Hello'', ''ds_workshop_listmaps''. From the leader node:
@@ -56,7 +56,7 @@ api-cli run module/cs21/run-command --data '{"command":"status"}'
 </code>
 
 =====Connecting=====
-Install CS2 from Steam, then open ''%%steam://connect/<node IP or name>:<port>%%'' (link on the settings page) or type ''connect <address>'' in the game console. For players outside the LAN forward the game port (TCP+UDP) and, if enabled, the CSTV port on the router to the node and enter a GSLT token.
+Install CS2 from Steam, then open ''%%steam://connect/<node IP or name>:<port>%%'' (link on the settings page) or type ''%%connect <address>%%'' in the game console. For players outside the LAN forward the game port (TCP+UDP) and, if enabled, the CSTV port on the router to the node and enter a GSLT token.
 
 =====Backup and restore=====
 The backup contains the module settings (token, RCON password), the cfg directory and the hooks — not the game files. A restore recreates the instance, restores the cfg files into a fresh volume, re-applies settings and firewall service and starts the server, which downloads the game files again.
