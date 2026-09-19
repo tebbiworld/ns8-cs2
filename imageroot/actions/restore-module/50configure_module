@@ -13,6 +13,9 @@
 import os
 
 import agent
+import modsecrets
+
+_secrets = modsecrets.read()
 import agent.tasks
 
 env = os.environ
@@ -24,8 +27,8 @@ except FileNotFoundError:
     pass
 data = {
     "server_name": env.get("SERVER_NAME", "CS2 server"),
-    "server_password": env.get("SERVER_PASSWORD", ""),
-    "gslt_token": env.get("GSLT_TOKEN", ""),
+    "server_password": _secrets.get("SERVER_PASSWORD", ""),
+    "gslt_token": _secrets.get("GSLT_TOKEN", ""),
     "max_players": int(env.get("MAX_PLAYERS", "10")),
     "game_port": int(env.get("GAME_PORT", "27015")),
     "lan_mode": env.get("LAN_MODE") == "true",
@@ -39,7 +42,7 @@ data = {
     "bot_quota_mode": env.get("BOT_QUOTA_MODE", "fill"),
     "tv_enabled": env.get("TV_ENABLED") == "true",
     "tv_port": int(env.get("TV_PORT", "27020")),
-    "tv_password": env.get("TV_PASSWORD", ""),
+    "tv_password": _secrets.get("TV_PASSWORD", ""),
     "tv_delay": int(env.get("TV_DELAY", "0")),
     "tv_autorecord": env.get("TV_AUTORECORD") == "true",
     "validate_files": env.get("VALIDATE_FILES") == "true",
