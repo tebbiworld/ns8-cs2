@@ -10,9 +10,13 @@
 
 import socket
 import struct
+import os
 import sys
 
 port, password = int(sys.argv[1]), sys.argv[2]
+if password == "-":
+    # preferred: keep the password off the command line
+    password = os.environ.get("RCON_PASSWORD", "")
 command = " ".join(sys.argv[3:])
 
 def packet(pid, ptype, body):

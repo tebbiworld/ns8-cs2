@@ -14,12 +14,15 @@ import subprocess
 import sys
 
 import agent
+import modsecrets
 
 data = json.load(sys.stdin)
 command = data["command"].strip()
 try:
     proc = subprocess.run([os.path.expanduser("~/.config/bin/cs2-rcon"), os.environ.get("GAME_PORT", "27015"),
-                           os.environ["RCON_PASSWORD"], command], capture_output=True, text=True, timeout=30)
+                           "-", command], capture_output=True, text=True, timeout=30,
+                          # the password travels in the process environment, not on the command line
+                          env=dict(os.environ, RCON_PASSWORD=modsecrets.get("RCON_PASSWORD")))
 except subprocess.TimeoutExpired:
     print(agent.SD_ERR + "RCON timed out (server not running or still starting?)", file=sys.stderr)
     sys.exit(1)
