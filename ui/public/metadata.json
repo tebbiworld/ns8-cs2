@@ -16,7 +16,9 @@
   "docs": {
     "documentation_url": "https://github.com/joedwards32/CS2#readme",
     "bug_url": "https://github.com/tebbiworld/ns8-cs2/issues",
-    "code_url": "https://github.com/tebbiworld/ns8-cs2"
+    "code_url": "https://github.com/tebbiworld/ns8-cs2",
+    "relnotes_url": "https://github.com/tebbiworld/ns8-cs2/releases",
+    "terms_url": "https://store.steampowered.com/subscriber_agreement/"
   },
   "source": "ghcr.io/tebbiworld/cs2"
 }
