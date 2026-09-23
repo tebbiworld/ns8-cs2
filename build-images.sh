@@ -40,10 +40,12 @@ buildah add "${container}" imageroot /imageroot
 buildah add "${container}" ui/dist /ui
 # node:fwadm: the game port (tcp+udp) and the CSTV port are opened on the node
 # firewall as a public service named after the instance. No Traefik route.
+# The bulk-data volumes can be placed on an additional disk at install time.
 buildah config --entrypoint=/ \
     --label="org.nethserver.authorizations=node:fwadm" \
     --label="org.nethserver.rootfull=0" \
     --label="org.nethserver.images=${runtime_images[*]}" \
+    --label="org.nethserver.volumes=cs2-data" \
     "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
 
