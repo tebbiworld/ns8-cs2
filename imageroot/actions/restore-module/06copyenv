@@ -11,10 +11,19 @@ import json
 import sys
 
 import agent
+import modsecrets
 
 request = json.load(sys.stdin)
 env = request["environment"]
-keep = ["RCON_PASSWORD", "SERVER_NAME", "SERVER_PASSWORD", "GSLT_TOKEN", "MAX_PLAYERS", "GAME_PORT", "LAN_MODE", "GAME_MODE",
+keep = ["SERVER_NAME", "MAX_PLAYERS", "GAME_PORT", "LAN_MODE", "GAME_MODE",
         "MAP_GROUP", "START_MAP", "WORKSHOP_COLLECTION", "WORKSHOP_MAP", "BOT_DIFFICULTY", "BOT_QUOTA", "BOT_QUOTA_MODE",
-        "TV_ENABLED", "TV_PORT", "TV_PASSWORD", "TV_DELAY", "TV_AUTORECORD", "VALIDATE_FILES", "ADDITIONAL_ARGS"]
+        "TV_ENABLED", "TV_PORT", "TV_DELAY", "TV_AUTORECORD", "VALIDATE_FILES", "ADDITIONAL_ARGS"]
 agent.mset_env({k: env[k] for k in keep if k in env})
+
+# Secrets come back with the restored state/passwords.env. A backup taken with
+# module version 1.0.0 still carries them in the environment: move them to the
+# file.
+legacy = {k: env[k] for k in ("RCON_PASSWORD", "SERVER_PASSWORD", "GSLT_TOKEN", "TV_PASSWORD") if env.get(k)}
+if legacy:
+    modsecrets.write(legacy)
+    print("restored legacy secrets from the backup environment into passwords.env", file=sys.stderr)
