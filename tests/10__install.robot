@@ -18,7 +18,11 @@ Install the module
 
 Remember the RCON password before the update
     Skip If    '${SCENARIO}' != 'update'    scenario is ${SCENARIO}
-    ${h} =    Run on node    runagent -m ${module_id} bash -c 'grep ^RCON_PASSWORD= "$AGENT_STATE_DIR/environment" | sha256sum'
+    # 1.0.0 kept the secret in the module environment, later releases keep it
+    # in passwords.env: read it from wherever the installed release has it.
+    ${h} =    Run on node    runagent -m ${module_id} bash -c 'cd "$AGENT_STATE_DIR" && cat passwords.env environment 2>/dev/null | grep -m1 ^RCON_PASSWORD=. | sha256sum'
+    # sha256 of no input: without this check a lost secret compares equal to nothing
+    Should Not Be Equal    ${h.split()[0]}    e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855    no RCON password found before the update
     Set Global Variable    ${RCON_BEFORE}    ${h}
 
 Update to the image under test
