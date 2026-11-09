@@ -16,7 +16,7 @@ reponame="cs2"
 # org.nethserver.images label. The image installs/updates the server files
 # with SteamCMD (anonymous login) into /home/steam/cs2-dedicated at every
 # start and is configured through environment variables.
-cs2_image="docker.io/joedwards32/cs2:4.0.1"
+cs2_image="docker.io/joedwards32/cs2:5.0.1"
 
 runtime_images=(
     "${cs2_image}"

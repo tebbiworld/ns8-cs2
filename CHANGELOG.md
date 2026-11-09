@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1 — 2026-11-09
+
+- joedwards32/cs2 4.0.1 → 5.0.1 (automatic upstream update).
+
 ## 1.1.0 — 2026-09-19
 
 Alignment with the NethServer module conventions (NethServer/agents skills).
